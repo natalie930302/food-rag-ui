@@ -81,7 +81,7 @@ export default function AskPanel() {
   return (
     <div>
       <div className="page-title">法規問答</div>
-      <div className="page-sub">針對食藥署法規與北市違規案例提問</div>
+      <div className="page-sub">問任何食品法規問題，AI 即時解答</div>
 
       <div className="card">
         <div className="card-title">輸入問題</div>
