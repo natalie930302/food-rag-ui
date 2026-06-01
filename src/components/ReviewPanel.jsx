@@ -56,7 +56,7 @@ export default function ReviewPanel() {
   return (
     <div>
       <div className="page-title">廣告審稿</div>
-      <div className="page-sub">交叉比對食安法 × 藥事法 × 健康食品管理法</div>
+      <div className="page-sub">依食安法第 28 條 × 健康食品管理法第 14 條審查</div>
 
       <div className="card">
         <div className="card-title">廣告文案</div>
