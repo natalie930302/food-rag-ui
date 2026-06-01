@@ -22,14 +22,14 @@ export default function App() {
       <div className="mobile-header">
         <div>
           <h1>食品法規 RAG 系統</h1>
-          <span>食藥署法規 × 北市違規案例</span>
+          <span>食安法 × 藥事法 × 健康食品法 × 違規案例</span>
         </div>
       </div>
 
       <aside className="sidebar">
         <div className="sidebar-logo">
           <h1>食品法規<br />RAG 系統</h1>
-          <span>食藥署法規 × 北市違規案例</span>
+          <span>食安法 × 藥事法 × 健康食品法 × 違規案例</span>
         </div>
         <nav>
           {TABS.map(t => (
