@@ -3,7 +3,7 @@ import { ask } from "../api";
 
 function SourceItem({ c }) {
   const fileUrl = c.source_path
-    ? `http://localhost:8000/files/${c.source_path.replace(/\\/g, "/")}`
+    ? `/files/${c.source_path.replace(/\\/g, "/")}`
     : null;
   return (
     <div className="source-item">

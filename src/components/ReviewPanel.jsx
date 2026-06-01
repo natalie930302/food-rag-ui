@@ -9,7 +9,7 @@ const VERDICT_MAP = {
 
 function SourceItem({ c }) {
   const fileUrl = c.source_path
-    ? `http://localhost:8000/files/${c.source_path.replace(/\\/g, "/")}`
+    ? `/files/${c.source_path.replace(/\\/g, "/")}`
     : null;
   return (
     <div className="source-item">
@@ -56,7 +56,7 @@ export default function ReviewPanel() {
   return (
     <div>
       <div className="page-title">廣告審稿</div>
-      <div className="page-sub">檢查食品廣告文案是否符合食安法第 28 條</div>
+      <div className="page-sub">交叉比對食安法 × 藥事法 × 健康食品管理法</div>
 
       <div className="card">
         <div className="card-title">廣告文案</div>
