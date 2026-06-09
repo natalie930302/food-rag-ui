@@ -1,4 +1,4 @@
-const BASE = "";
+const BASE = "/api";
 
 export async function ask(question, filters = {}, top_k = 5, include_cases = false) {
   const res = await fetch(`${BASE}/ask`, {
