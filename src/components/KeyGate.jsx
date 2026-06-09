@@ -31,8 +31,7 @@ export default function KeyGate({ onKey }) {
             style={{ color: "#60a5fa" }}>
             OpenAI API Key
           </a>
-          ，格式為 <code style={{ color: "#94a3b8" }}>sk-...</code> 或{" "}
-          <code style={{ color: "#94a3b8" }}>sk-proj-...</code>。
+          。
         </p>
         <p style={{ color: "#4a5f7a", fontSize: 12, marginBottom: 24 }}>
           Key 僅存於瀏覽器本地，不會上傳至伺服器以外。
