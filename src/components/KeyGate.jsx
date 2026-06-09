@@ -25,8 +25,16 @@ export default function KeyGate({ onKey }) {
         width: 380, boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
       }}>
         <h2 style={{ color: "#e2eaf4", marginBottom: 8 }}>食品法規 RAG</h2>
-        <p style={{ color: "#6b7fa0", fontSize: 14, marginBottom: 24 }}>
-          請輸入你的 OpenAI API Key，僅存在瀏覽器本地。
+        <p style={{ color: "#6b7fa0", fontSize: 14, marginBottom: 8 }}>
+          請輸入你的{" "}
+          <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer"
+            style={{ color: "#60a5fa" }}>
+            OpenAI API Key
+          </a>
+          ，格式為 <code style={{ color: "#94a3b8" }}>sk-...</code>。
+        </p>
+        <p style={{ color: "#4a5f7a", fontSize: 12, marginBottom: 24 }}>
+          Key 僅存於瀏覽器本地，不會上傳至伺服器以外。
         </p>
         <input
           type="password"
