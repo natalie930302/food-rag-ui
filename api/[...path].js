@@ -33,6 +33,14 @@ export default async function handler(req, res) {
     }
 
     const text = await upstream.text();
+    if (upstream.status >= 400) {
+      return res.status(upstream.status).json({
+        _upstream_url: url,
+        _method: req.method,
+        _body_sent: JSON.stringify(req.body),
+        _hf_response: text,
+      });
+    }
     try {
       res.status(upstream.status).json(JSON.parse(text));
     } catch {
