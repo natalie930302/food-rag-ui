@@ -30,7 +30,7 @@ function SourceItem({ c }) {
   );
 }
 
-export default function ReviewPanel() {
+export default function ReviewPanel({ apiKey = "" }) {
   const [adText, setAdText] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -42,7 +42,7 @@ export default function ReviewPanel() {
     setError("");
     setResult(null);
     try {
-      const data = await review(adText);
+      const data = await review(adText, 5, apiKey);
       setResult(data);
     } catch (e) {
       setError(e.message);

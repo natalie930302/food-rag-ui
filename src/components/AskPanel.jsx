@@ -51,7 +51,7 @@ function CasesTable({ cases }) {
   );
 }
 
-export default function AskPanel() {
+export default function AskPanel({ apiKey = "" }) {
   const [question, setQuestion] = useState("");
   const [topK, setTopK] = useState(5);
   const [includeCases, setIncludeCases] = useState(false);
@@ -65,7 +65,7 @@ export default function AskPanel() {
     setError("");
     setResult(null);
     try {
-      const data = await ask(question, {}, topK, includeCases);
+      const data = await ask(question, {}, topK, includeCases, apiKey);
       setResult(data);
     } catch (e) {
       setError(e.message);

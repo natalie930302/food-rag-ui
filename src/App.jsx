@@ -5,6 +5,7 @@ import ReviewPanel from "./components/ReviewPanel";
 import StatsPanel from "./components/StatsPanel";
 import LawsPanel from "./components/LawsPanel";
 import FailedPanel from "./components/FailedPanel";
+import KeyGate from "./components/KeyGate";
 
 const TABS = [
   { id: "ask",    icon: "💬", label: "法規問答" },
@@ -16,6 +17,15 @@ const TABS = [
 
 export default function App() {
   const [tab, setTab] = useState("ask");
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem("openai_key") || "");
+
+  function handleKey(k) { setApiKey(k); }
+  function clearKey() {
+    localStorage.removeItem("openai_key");
+    setApiKey("");
+  }
+
+  if (!apiKey) return <KeyGate onKey={handleKey} />;
 
   return (
     <div className="layout">
@@ -43,14 +53,21 @@ export default function App() {
             </div>
           ))}
         </nav>
-        <div style={{ padding: "16px 20px", fontSize: "0.72rem", color: "#3d4f6b", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-          API: localhost:8000
+        <div
+          onClick={clearKey}
+          style={{
+            padding: "12px 20px", fontSize: "0.72rem", color: "#3d4f6b",
+            borderTop: "1px solid rgba(255,255,255,0.06)", cursor: "pointer",
+          }}
+          title="點擊清除 API Key"
+        >
+          🔑 更換 API Key
         </div>
       </aside>
 
       <main className="main">
-        {tab === "ask"    && <AskPanel />}
-        {tab === "review" && <ReviewPanel />}
+        {tab === "ask"    && <AskPanel apiKey={apiKey} />}
+        {tab === "review" && <ReviewPanel apiKey={apiKey} />}
         {tab === "laws"   && <LawsPanel />}
         {tab === "stats"  && <StatsPanel />}
         {tab === "failed" && <FailedPanel />}

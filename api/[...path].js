@@ -18,6 +18,7 @@ export default async function handler(req, res) {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${process.env.HF_TOKEN}`,
+        ...(req.headers["x-openai-key"] ? { "X-OpenAI-Key": req.headers["x-openai-key"] } : {}),
       },
       body: req.method === "GET" || req.method === "HEAD"
         ? undefined
