@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ask } from "../api";
 
 function SourceItem({ c }) {
@@ -56,8 +56,20 @@ export default function AskPanel({ apiKey = "" }) {
   const [topK, setTopK] = useState(5);
   const [includeCases, setIncludeCases] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [slowWarning, setSlowWarning] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    if (loading) {
+      timerRef.current = setTimeout(() => setSlowWarning(true), 8000);
+    } else {
+      clearTimeout(timerRef.current);
+      setSlowWarning(false);
+    }
+    return () => clearTimeout(timerRef.current);
+  }, [loading]);
 
   async function submit() {
     if (!question.trim()) return;
@@ -96,6 +108,11 @@ export default function AskPanel({ apiKey = "" }) {
           <button className="btn btn-primary" onClick={submit} disabled={loading || !question.trim()}>
             {loading ? <><span className="spinner" /> 查詢中…</> : "送出查詢"}
           </button>
+          {slowWarning && (
+            <p style={{ fontSize: "0.78rem", color: "#f59e0b", margin: "6px 0 0" }}>
+              伺服器暖機中，首次查詢較慢，請稍候…
+            </p>
+          )}
           <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.85rem", color: "#475569" }}>
             <input type="checkbox" checked={includeCases} onChange={e => setIncludeCases(e.target.checked)} />
             包含違規案例

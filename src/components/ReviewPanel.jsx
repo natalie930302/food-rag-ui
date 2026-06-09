@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { review } from "../api";
 
 const VERDICT_MAP = {
@@ -33,8 +33,20 @@ function SourceItem({ c }) {
 export default function ReviewPanel({ apiKey = "" }) {
   const [adText, setAdText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [slowWarning, setSlowWarning] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    if (loading) {
+      timerRef.current = setTimeout(() => setSlowWarning(true), 8000);
+    } else {
+      clearTimeout(timerRef.current);
+      setSlowWarning(false);
+    }
+    return () => clearTimeout(timerRef.current);
+  }, [loading]);
 
   async function submit() {
     if (!adText.trim()) return;
@@ -70,6 +82,11 @@ export default function ReviewPanel({ apiKey = "" }) {
           <button className="btn btn-primary" onClick={submit} disabled={loading || !adText.trim()}>
             {loading ? <><span className="spinner" /> 審核中…</> : "送出審稿"}
           </button>
+          {slowWarning && (
+            <p style={{ fontSize: "0.78rem", color: "#f59e0b", margin: "6px 0 0" }}>
+              伺服器暖機中，首次查詢較慢，請稍候…
+            </p>
+          )}
         </div>
       </div>
 
