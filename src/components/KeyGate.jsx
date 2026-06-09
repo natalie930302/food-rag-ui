@@ -26,7 +26,7 @@ export default function KeyGate({ onKey }) {
       }}>
         <h2 style={{ color: "#e2eaf4", marginBottom: 8 }}>食品法規 RAG</h2>
         <p style={{ color: "#6b7fa0", fontSize: 14, marginBottom: 8 }}>
-          本系統因法規問答需頻繁呼叫 LLM，採用 <code style={{ color: "#94a3b8" }}>gpt-4o-mini</code> 以平衡效能與成本，請輸入你的{" "}
+          本系統因法規問答需呼叫 LLM，採用 <code style={{ color: "#94a3b8" }}>gpt-4o-mini</code>，請輸入你的{" "}
           <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer"
             style={{ color: "#60a5fa" }}>
             OpenAI API Key
