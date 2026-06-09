@@ -2,12 +2,13 @@ const HF_SPACE = "https://natalie93-food-rag.hf.space";
 
 export default async function handler(req, res) {
   try {
-    const parts = Array.isArray(req.query.path) ? req.query.path : [req.query.path];
+    const pathParam = req.query["...path"] ?? req.query.path;
+    const parts = Array.isArray(pathParam) ? pathParam : [pathParam].filter(Boolean);
     const upstreamPath = "/" + parts.join("/");
 
     const params = new URLSearchParams();
     for (const [k, v] of Object.entries(req.query)) {
-      if (k !== "path") params.append(k, v);
+      if (k !== "path" && k !== "...path") params.append(k, v);
     }
     const qs = params.toString() ? "?" + params.toString() : "";
     const url = `${HF_SPACE}${upstreamPath}${qs}`;
@@ -24,23 +25,14 @@ export default async function handler(req, res) {
       redirect: "manual",
     });
 
-    // 302 代表 token 無效或未設定，HF 要求重新登入
     if (upstream.status >= 300 && upstream.status < 400) {
       return res.status(401).json({
-        error: "HF_TOKEN invalid or missing — check Vercel env vars",
+        error: "HF_TOKEN invalid or missing",
         redirect_to: upstream.headers.get("location"),
       });
     }
 
     const text = await upstream.text();
-    if (upstream.status >= 400) {
-      return res.status(upstream.status).json({
-        _upstream_url: url,
-        _method: req.method,
-        _body_sent: JSON.stringify(req.body),
-        _hf_response: text,
-      });
-    }
     try {
       res.status(upstream.status).json(JSON.parse(text));
     } catch {
