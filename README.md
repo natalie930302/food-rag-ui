@@ -1,16 +1,20 @@
-# React + Vite
+# food-rag-ui
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+`food-rag` RAG 問答系統的前端介面,提供食品法規問答的對話式 UI。
 
-Currently, two official plugins are available:
+## 結構
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- `src/App.jsx` — 主要對話介面
+- `src/api.js` — 與 `food-rag` 後端 API 溝通
+- `src/components/` — UI 元件
 
-## React Compiler
+## 技術棧
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+React + Vite,搭配後端 `food-rag`(LlamaIndex + FAISS + OpenAI)提供的問答 API。
 
-## Expanding the ESLint configuration
+## 開發
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+npm run dev
+```
