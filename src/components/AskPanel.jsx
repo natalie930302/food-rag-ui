@@ -137,6 +137,17 @@ export default function AskPanel({ apiKey = "" }) {
         <>
           <div className="card">
             <div className="card-title">AI 回答</div>
+            {result.meta.confident === false ? (
+              <span className="verdict verdict-warn">⚠️ 信心不足,誠實拒答</span>
+            ) : result.meta.confident === true ? (
+              <span className="verdict verdict-pass">✓ 已找到可信法規依據</span>
+            ) : null}
+            {result.meta.used_retry && (
+              <p style={{ fontSize: "0.78rem", color: "#94a3b8", margin: "0 0 10px" }}>
+                系統自動把問題換一種說法重新檢索過一次(Agentic RAG query reformulation)
+                {result.meta.confident ? "，這次找到了可信的依據。" : "，但仍未找到足夠可信的依據。"}
+              </p>
+            )}
             <div className="answer-box">{result.answer}</div>
             <div className="meta-row">
               <span>檢索 {result.meta.retrieval_ms} ms</span>
