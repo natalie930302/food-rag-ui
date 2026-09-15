@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ask } from "../api";
+import { query } from "../api";
 
 function SourceItem({ c }) {
   const fileUrl = c.source_path
@@ -77,7 +77,7 @@ export default function AskPanel({ apiKey = "" }) {
     setError("");
     setResult(null);
     try {
-      const data = await ask(question, {}, topK, includeCases, apiKey);
+      const data = await query(question, { topK, forceIntent: includeCases ? "case_lookup" : null, apiKey });
       setResult(data);
     } catch (e) {
       setError(e.message);
@@ -115,7 +115,7 @@ export default function AskPanel({ apiKey = "" }) {
           )}
           <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.85rem", color: "#475569" }}>
             <input type="checkbox" checked={includeCases} onChange={e => setIncludeCases(e.target.checked)} />
-            包含違規案例
+            一定要查違規案例(不交給路由判斷)
           </label>
           <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.85rem", color: "#475569" }}>
             Top-K
@@ -150,11 +150,22 @@ export default function AskPanel({ apiKey = "" }) {
             )}
             <div className="answer-box">{result.answer}</div>
             <div className="meta-row">
+              <span>路由 {result.route.intent}({result.route.source === "rules" ? "規則" : result.route.source === "llm" ? "LLM" : result.route.source}) → {result.route.handler}</span>
               <span>檢索 {result.meta.retrieval_ms} ms</span>
               <span>LLM {result.meta.llm_ms} ms</span>
               <span>模型 {result.meta.model}</span>
               <span>共搜尋 {result.meta.total_chunks_searched.toLocaleString()} 筆向量</span>
             </div>
+            <div className="meta-row">
+              <span>步驟 {result.trace.map(s => s.name).join(" → ")}</span>
+              <span>LLM 呼叫 {result.usage.llm_calls} 次 · {result.usage.total_tokens.toLocaleString()} tokens · {result.usage.elapsed_s}s</span>
+              {result.meta.unsupported_citations?.length > 0 && (
+                <span style={{ color: "#ef4444" }}>⚠ 引用了檢索內容裡沒有的條號:{result.meta.unsupported_citations.join("、")}</span>
+              )}
+            </div>
+            {result.verdict && (
+              <p style={{ fontSize: "0.85rem", margin: "8px 0 0" }}>審稿風險等級:<strong>{result.verdict}</strong></p>
+            )}
           </div>
 
           {result.sources.length > 0 && (

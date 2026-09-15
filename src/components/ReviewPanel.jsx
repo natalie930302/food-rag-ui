@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { review } from "../api";
+import { query } from "../api";
 
 const VERDICT_MAP = {
   low:    { cls: "verdict-pass", label: "🟢 低風險" },
@@ -54,7 +54,7 @@ export default function ReviewPanel({ apiKey = "" }) {
     setError("");
     setResult(null);
     try {
-      const data = await review(adText, 5, apiKey);
+      const data = await query(adText, { forceIntent: "ad_review", topK: 5, apiKey });
       setResult(data);
     } catch (e) {
       setError(e.message);
@@ -102,32 +102,34 @@ export default function ReviewPanel({ apiKey = "" }) {
               <span>檢索 {result.meta.retrieval_ms} ms</span>
               <span>LLM {result.meta.llm_ms} ms</span>
               <span>模型 {result.meta.model}</span>
+              <span>步驟 {result.trace.map(s => s.name).join(" → ")}</span>
+              <span>LLM 呼叫 {result.usage.llm_calls} 次 · {result.usage.total_tokens.toLocaleString()} tokens</span>
             </div>
           </div>
 
-          {result.evidence.matched_keywords?.length > 0 && (
+          {result.matched_keywords?.length > 0 && (
             <div className="card">
               <div className="card-title">偵測到的風險關鍵字</div>
               <div className="keyword-list">
-                {result.evidence.matched_keywords.map((kw, i) => (
+                {result.matched_keywords.map((kw, i) => (
                   <span key={i} className="keyword-tag">{kw}</span>
                 ))}
               </div>
             </div>
           )}
 
-          {result.evidence.laws?.length > 0 && (
+          {result.sources?.length > 0 && (
             <div className="card">
-              <div className="card-title">相關法規依據（{result.evidence.laws.length} 筆）</div>
+              <div className="card-title">相關法規依據（{result.sources.length} 筆）</div>
               <div className="sources-list">
-                {result.evidence.laws.map((c, i) => <SourceItem key={i} c={c} />)}
+                {result.sources.map((c, i) => <SourceItem key={i} c={c} />)}
               </div>
             </div>
           )}
 
-          {result.evidence.cases?.length > 0 && (
+          {result.related_cases?.length > 0 && (
             <div className="card">
-              <div className="card-title">相似違規案例（{result.evidence.cases.length} 筆）</div>
+              <div className="card-title">相似違規案例（{result.related_cases.length} 筆）</div>
               <div className="table-wrap">
                 <table className="cases-table" style={{ tableLayout: "fixed", width: "100%" }}>
                   <colgroup>
@@ -147,7 +149,7 @@ export default function ReviewPanel({ apiKey = "" }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {result.evidence.cases.map((c, i) => (
+                    {result.related_cases.map((c, i) => (
                       <tr key={i}>
                         <td style={{ whiteSpace: "nowrap" }}>{c.year}/{c.month}</td>
                         <td style={{ wordBreak: "break-all" }}>{c.company}</td>

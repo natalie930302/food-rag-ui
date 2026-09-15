@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getStats } from "../api";
+import { getHealth } from "../api";
 
 function BarChart({ data, title }) {
   if (!data || !Object.keys(data).length) return null;
@@ -29,8 +29,8 @@ export default function StatsPanel() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getStats()
-      .then(setStats)
+    getHealth()
+      .then(h => setStats({ ...h.index, health: h }))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
@@ -43,6 +43,18 @@ export default function StatsPanel() {
     <div>
       <div className="page-title">索引統計</div>
       <div className="page-sub">目前向量索引與資料庫內容概況</div>
+
+      <div className="card">
+        <div className="card-title">系統狀態</div>
+        <div className="meta-row">
+          <span>{stats.health.status === "ok" ? "🟢 正常" : "🟡 部分資源未就緒"}</span>
+          {Object.entries(stats.health.checks).map(([k, v]) => <span key={k}>{v ? "✓" : "✗"} {k}</span>)}
+          <span>embedding {stats.health.embed_device}</span>
+          <span>reranker {stats.health.reranker_device}{stats.health.reranker_fp16 ? " fp16" : ""}</span>
+          <span>模型 {stats.health.model}</span>
+          <span>uptime {Math.round(stats.health.uptime_s)}s</span>
+        </div>
+      </div>
 
       <div className="stats-grid">
         <div className="stat-card">

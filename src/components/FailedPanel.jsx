@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getFailed } from "../api";
+import { getHealth } from "../api";
 
 export default function FailedPanel() {
   const [files, setFiles] = useState([]);
@@ -8,8 +8,8 @@ export default function FailedPanel() {
   const [filter, setFilter] = useState("");
 
   useEffect(() => {
-    getFailed(200)
-      .then(setFiles)
+    getHealth()
+      .then(h => setFiles(h.failed_files))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
