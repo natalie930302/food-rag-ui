@@ -1,15 +1,13 @@
 import { useState } from "react";
 import "./App.css";
-import AskPanel from "./components/AskPanel";
-import ReviewPanel from "./components/ReviewPanel";
+import QueryPanel from "./components/QueryPanel";
 import StatsPanel from "./components/StatsPanel";
 import LawsPanel from "./components/LawsPanel";
 import FailedPanel from "./components/FailedPanel";
 import KeyGate from "./components/KeyGate";
 
 const TABS = [
-  { id: "ask",    icon: "💬", label: "法規問答" },
-  { id: "review", icon: "📋", label: "廣告審稿" },
+  { id: "ask",    icon: "💬", label: "問答 / 審稿" },
   { id: "laws",   icon: "⚖️",  label: "法條關聯" },
   { id: "stats",  icon: "📊", label: "索引統計" },
   { id: "failed", icon: "⚠️",  label: "失敗檔案" },
@@ -32,14 +30,14 @@ export default function App() {
       <div className="mobile-header">
         <div>
           <h1>食品法規 RAG 系統</h1>
-          <span>問法規・審廣告・查案例</span>
+          <span>一個入口・問法規・審廣告・查案例</span>
         </div>
       </div>
 
       <aside className="sidebar">
         <div className="sidebar-logo">
           <h1>食品法規<br />RAG 系統</h1>
-          <span>問法規・審廣告・查案例</span>
+          <span>一個入口・問法規・審廣告・查案例</span>
         </div>
         <nav>
           {TABS.map(t => (
@@ -66,8 +64,7 @@ export default function App() {
       </aside>
 
       <main className="main">
-        {tab === "ask"    && <AskPanel apiKey={apiKey} />}
-        {tab === "review" && <ReviewPanel apiKey={apiKey} />}
+        {tab === "ask"    && <QueryPanel apiKey={apiKey} />}
         {tab === "laws"   && <LawsPanel />}
         {tab === "stats"  && <StatsPanel />}
         {tab === "failed" && <FailedPanel />}

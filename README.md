@@ -1,20 +1,26 @@
 # food-rag-ui
 
-`food-rag` RAG 問答系統的前端介面,提供食品法規問答的對話式 UI。
+[food-rag](https://github.com/natalie930302/food-rag) 的前端。**單一輸入框**:問法規、找裁罰案例、或直接貼廣告文案,
+都送到後端唯一的 `POST /query`,由後端 router(規則層 → LLM 層)判斷意圖並分派;前端只依回傳的 `route.intent`
+決定呈現方式(審稿顯示風險燈號與關鍵字,其餘顯示信心狀態與回答),並可展開每一步執行軌跡(trace)。
+
+## 分頁
+
+- **問答 / 審稿**:單一入口。「模式」下拉可強制指定意圖(對應 `force_intent`),預設自動判斷
+- **法條關聯**:`GET /laws/{article}/related`
+- **索引統計 / 失敗檔案**:`GET /health`
 
 ## 結構
 
-- `src/App.jsx` — 主要對話介面
-- `src/api.js` — 與 `food-rag` 後端 API 溝通
-- `src/components/` — UI 元件
-
-## 技術棧
-
-React + Vite,搭配後端 `food-rag`(LlamaIndex + FAISS + OpenAI)提供的問答 API。
+- `src/App.jsx` — 側欄與分頁
+- `src/api.js` — 與後端溝通(`query()`、`getHealth()`、`getLawRelated()`)
+- `src/components/QueryPanel.jsx` — 單一入口與結果呈現
+- `src/components/KeyGate.jsx` — 使用者自帶 OpenAI key;**只存在瀏覽器 localStorage,不經過任何伺服器**
 
 ## 開發
 
 ```bash
 npm install
-npm run dev
+npm run dev      # vite dev server,/api 代理到 http://localhost:8000
+npm run build
 ```
