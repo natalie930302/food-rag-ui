@@ -1,9 +1,12 @@
 const BASE = "/api";
 
+/** KeyGate 的「使用伺服器設定的 Key」選項存的哨兵值;此時不送 X-OpenAI-Key,後端用自己的 .env。 */
+export const SERVER_KEY = "__server__";
+
 function authHeaders(apiKey) {
   return {
     "Content-Type": "application/json",
-    ...(apiKey ? { "X-OpenAI-Key": apiKey } : {}),
+    ...(apiKey && apiKey !== SERVER_KEY ? { "X-OpenAI-Key": apiKey } : {}),
   };
 }
 

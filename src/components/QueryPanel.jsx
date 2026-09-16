@@ -43,7 +43,7 @@ function SourceItem({ c }) {
         {c.kind && <span className="tag tag-kind">{c.kind}</span>}
         {c.is_ocr && <span className="tag tag-ocr">OCR</span>}
         {c.has_table && <span className="tag tag-table">表格</span>}
-        <span className="score-badge">相似度 {(c.score * 100).toFixed(1)}%</span>
+        {c.score > 0 && <span className="score-badge">相似度 {(c.score * 100).toFixed(1)}%</span>}
       </div>
       {c.document && (
         fileUrl
@@ -99,7 +99,7 @@ function TraceList({ trace }) {
       {trace.map((s, i) => (
         <li key={i}>
           <code style={{ fontSize: "0.78rem" }}>{s.name}</code>
-          {typeof s.ms === "number" && <span style={{ color: "#94a3b8" }}> · {s.ms} ms</span>}
+          {s.ms > 0 && <span style={{ color: "#94a3b8" }}> · {s.ms} ms</span>}
           {s.confident === false && <span style={{ color: "#f59e0b" }}> · 信心不足</span>}
           {s.query_drift_detected && <span style={{ color: "#ef4444" }}> · 偵測到查詢漂移,已用原話重查</span>}
           {s.detail && <span style={{ color: "#64748b" }}> — {s.detail}</span>}
@@ -190,7 +190,7 @@ export default function QueryPanel({ apiKey = "" }) {
           </label>
           <span style={{ fontSize: "0.78rem", color: "#94a3b8" }}>Ctrl+Enter 送出</span>
         </div>
-        {slowWarning && (
+        {loading && slowWarning && (
           <p style={{ fontSize: "0.78rem", color: "#f59e0b", margin: "6px 0 0" }}>
             伺服器暖機中,首次查詢較慢,請稍候…
           </p>
@@ -251,8 +251,8 @@ export default function QueryPanel({ apiKey = "" }) {
             <div className="answer-box">{result.answer}</div>
 
             <div className="meta-row">
-              <span>檢索 {result.meta.retrieval_ms} ms</span>
-              <span>LLM {result.meta.llm_ms} ms</span>
+              {result.meta.retrieval_ms > 0 && <span>檢索 {result.meta.retrieval_ms} ms</span>}
+              {result.meta.llm_ms > 0 && <span>LLM {result.meta.llm_ms} ms</span>}
               <span>模型 {result.meta.model}</span>
               <span>LLM 呼叫 {result.usage.llm_calls} 次 · {result.usage.total_tokens.toLocaleString()} tokens · {result.usage.elapsed_s}s</span>
               {result.meta.hit_tool_call_limit && <span style={{ color: "#f59e0b" }}>已達工具呼叫上限</span>}

@@ -1,8 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getHealth, SERVER_KEY } from "../api";
 
 export default function KeyGate({ onKey }) {
   const [val, setVal] = useState("");
   const [err, setErr] = useState("");
+  const [serverHasKey, setServerHasKey] = useState(false);
+
+  // 後端 .env 有設 key(本機開發 / 自架 demo)時,提供不輸入 key 的入口
+  useEffect(() => {
+    let alive = true;
+    getHealth()
+      .then(h => { if (alive && h?.checks?.openai_key) setServerHasKey(true); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
+
+  function useServerKey() {
+    localStorage.setItem("openai_key", SERVER_KEY);
+    onKey(SERVER_KEY);
+  }
 
   function submit(e) {
     e.preventDefault();
@@ -57,6 +73,15 @@ export default function KeyGate({ onKey }) {
         }}>
           進入系統
         </button>
+        {serverHasKey && (
+          <button type="button" onClick={useServerKey} style={{
+            width: "100%", padding: "10px", borderRadius: 8,
+            background: "transparent", color: "#94a3b8", border: "1px solid #2d3f5a",
+            fontSize: 13, cursor: "pointer", marginTop: 10,
+          }}>
+            使用伺服器設定的 Key(不輸入)
+          </button>
+        )}
       </form>
     </div>
   );
