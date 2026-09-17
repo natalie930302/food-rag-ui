@@ -214,6 +214,16 @@ export default function QueryPanel({ apiKey = "" }) {
       {loading && (
         <div className="card">
           <div className="card-title">執行中</div>
+          {liveSteps.length > 0 && (() => {
+            // 第一步 route 的 detail 是「intent (source) reason」,先從 intent 推出路徑,把整條路先畫出來
+            const intent = (liveSteps[0].detail || "").split(" ")[0];
+            const handler = intent === "ad_review" ? "review" : intent === "multi_hop" ? "agent" : "regulation";
+            return (
+              <div style={{ marginBottom: 10 }}>
+                <PipelineDiagram live result={{ route: { intent, handler }, trace: liveSteps, meta: {}, matched_keywords: [] }} />
+              </div>
+            );
+          })()}
           <ol style={{ margin: 0, paddingLeft: 20, fontSize: "0.85rem", color: "#475569", lineHeight: 1.8 }}>
             {liveSteps.map((s, i) => (
               <li key={i}>
