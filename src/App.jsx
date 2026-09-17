@@ -2,13 +2,11 @@ import { useState } from "react";
 import "./App.css";
 import QueryPanel from "./components/QueryPanel";
 import StatsPanel from "./components/StatsPanel";
-import LawsPanel from "./components/LawsPanel";
 import FailedPanel from "./components/FailedPanel";
 import KeyGate from "./components/KeyGate";
 
 const TABS = [
   { id: "ask",    icon: "💬", label: "問答 / 審稿" },
-  { id: "laws",   icon: "⚖️",  label: "法條關聯" },
   { id: "stats",  icon: "📊", label: "索引統計" },
   { id: "failed", icon: "⚠️",  label: "失敗檔案" },
 ];
@@ -65,7 +63,6 @@ export default function App() {
 
       <main className="main">
         {tab === "ask"    && <QueryPanel apiKey={apiKey} />}
-        {tab === "laws"   && <LawsPanel />}
         {tab === "stats"  && <StatsPanel />}
         {tab === "failed" && <FailedPanel />}
       </main>
