@@ -137,7 +137,6 @@ function AgentPath({ trace, meta }) {
   const cas = has(trace, "tool:search_violation_cases");
   const rel = has(trace, "tool:search_related_laws");
   const gen = has(trace, "generate")[0];
-  const ver = has(trace, "verify_citations")[0];
   const forced = reg.some(s => s.arguments?.forced);
   const regOk = reg.some(s => s.confident);
   const casOk = cas.some(s => s.confident);
@@ -163,7 +162,7 @@ function AgentPath({ trace, meta }) {
       <Arrow d="M609 150 L621 150" />
       <Node x={625} y={122} w={90} label={grounded === false ? "拒答" : "生成答案"} sub={gen?.detail?.includes("regenerated=True") ? "引用不符,重寫過一次" : ""} state={grounded === false ? "alt" : gen ? "done" : "skip"} />
       <Arrow d="M719 150 L731 150" on={!!ver || grounded !== false} />
-      <Node x={735} y={122} w={85} label="引用驗證" sub={ver ? (ver.detail?.includes("unsupported=0") ? "全部對得上" : "有對不上") : grounded === false ? "拒答不需驗證" : "見上方"} state={ver ? (ver.detail?.includes("unsupported=0") ? "done" : "fail") : grounded === false ? "skip" : "done"} />
+      <Node x={735} y={122} w={85} label="引用驗證" sub={grounded === false ? "拒答不需驗證" : (meta?.unsupported_citations?.length ? "有條號對不上" : "全部對得上")} state={grounded === false ? "skip" : (meta?.unsupported_citations?.length ? "fail" : "done")} />
       <Arrow d="M824 150 L836 150" />
       <Node x={840} y={122} w={55} label="回傳" state="done" />
     </svg>
