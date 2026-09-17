@@ -27,8 +27,8 @@ export default function FailedPanel() {
 
   return (
     <div>
-      <div className="page-title">解析失敗檔案</div>
-      <div className="page-sub">Ingest 過程中無法處理的檔案清單</div>
+      <div className="page-title">解析紀錄</div>
+      <div className="page-sub">建立索引時無法處理的來源檔案</div>
 
       <div className="card">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>

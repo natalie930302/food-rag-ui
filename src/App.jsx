@@ -6,9 +6,9 @@ import FailedPanel from "./components/FailedPanel";
 import KeyGate from "./components/KeyGate";
 
 const TABS = [
-  { id: "ask",    icon: "💬", label: "問答 / 審稿" },
-  { id: "stats",  icon: "📊", label: "索引統計" },
-  { id: "failed", icon: "⚠️",  label: "失敗檔案" },
+  { id: "ask",    label: "查詢" },
+  { id: "stats",  label: "資料庫狀態" },
+  { id: "failed", label: "解析紀錄" },
 ];
 
 export default function App() {
@@ -27,15 +27,15 @@ export default function App() {
     <div className="layout">
       <div className="mobile-header">
         <div>
-          <h1>食品法規 RAG 系統</h1>
-          <span>一個入口・問法規・審廣告・查案例</span>
+          <h1>食品法規查詢系統</h1>
+          <span>法規問答 · 裁罰案例 · 廣告文案審查</span>
         </div>
       </div>
 
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <h1>食品法規<br />RAG 系統</h1>
-          <span>一個入口・問法規・審廣告・查案例</span>
+          <h1>食品法規<br />查詢系統</h1>
+          <span>法規問答 · 裁罰案例 · 廣告文案審查</span>
         </div>
         <nav>
           {TABS.map(t => (
@@ -44,7 +44,6 @@ export default function App() {
               className={`nav-item${tab === t.id ? " active" : ""}`}
               onClick={() => setTab(t.id)}
             >
-              <span className="nav-icon">{t.icon}</span>
               {t.label}
             </div>
           ))}
@@ -52,12 +51,12 @@ export default function App() {
         <div
           onClick={clearKey}
           style={{
-            padding: "12px 20px", fontSize: "0.72rem", color: "#3d4f6b",
-            borderTop: "1px solid rgba(255,255,255,0.06)", cursor: "pointer",
+            padding: "12px 20px", fontSize: "0.75rem", color: "#8892b0",
+            borderTop: "1px solid rgba(255,255,255,0.08)", cursor: "pointer",
           }}
-          title="點擊清除 API Key"
+          title="清除已儲存的 API 金鑰"
         >
-          🔑 更換 API Key
+          更換 API 金鑰
         </div>
       </aside>
 
@@ -74,7 +73,6 @@ export default function App() {
             className={`bottom-nav-item${tab === t.id ? " active" : ""}`}
             onClick={() => setTab(t.id)}
           >
-            <span className="bottom-nav-icon">{t.icon}</span>
             <span>{t.label}</span>
           </div>
         ))}

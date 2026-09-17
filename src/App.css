@@ -466,3 +466,28 @@ textarea:focus, input[type="text"]:focus { border-color: #6366f1; background: #f
   /* Section header */
   .section-header { font-size: 0.9rem; }
 }
+
+
+/* ---- 去 toy 化補充:狀態文字、範例、來源 ---- */
+.hint { font-size: 0.78rem; color: #94a3b8; }
+.muted { color: #94a3b8; }
+.warn { color: #b45309; }
+.danger { color: #b91c1c; }
+.sep { color: #cbd5e1; margin: 0 6px; }
+.card-sub { font-size: 0.8rem; color: #64748b; margin: -4px 0 10px; }
+.card-title .count {
+  display: inline-block; min-width: 20px; padding: 0 6px; margin-left: 6px;
+  border-radius: 10px; background: #eef2ff; color: #4338ca; font-size: 0.72rem; font-weight: 600; text-align: center;
+}
+.examples { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.examples-label { font-size: 0.78rem; color: #94a3b8; margin-right: 2px; }
+.example-chip {
+  border: 1px solid #e2e8f0; background: #fff; color: #475569; border-radius: 999px;
+  padding: 5px 12px; font-size: 0.8rem; font-family: inherit; cursor: pointer; transition: border-color .15s, color .15s;
+}
+.example-chip:hover { border-color: #6366f1; color: #4338ca; }
+.source-doc { display: block; font-size: 0.78rem; color: #4f46e5; margin-bottom: 4px; text-decoration: none; }
+.source-doc:hover { text-decoration: underline; }
+.source-doc.muted { color: #94a3b8; }
+.verdict { font-weight: 600; letter-spacing: 0.01em; }
+.nav-item, .bottom-nav-item { font-weight: 500; }

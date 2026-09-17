@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { queryStream } from "../api";
 import PipelineDiagram from "./PipelineDiagram";
 
@@ -37,9 +37,9 @@ function plainText(t) {
 }
 
 const VERDICT_MAP = {
-  low:    { cls: "verdict-pass", label: "🟢 低風險" },
-  medium: { cls: "verdict-warn", label: "🟡 中風險" },
-  high:   { cls: "verdict-fail", label: "🔴 高風險" },
+  low:    { cls: "verdict-pass", label: "低風險" },
+  medium: { cls: "verdict-warn", label: "有疑慮" },
+  high:   { cls: "verdict-fail", label: "高風險" },
 };
 
 const EXAMPLES = [
@@ -58,12 +58,12 @@ function SourceItem({ c }) {
         {c.kind && <span className="tag tag-kind">{c.kind}</span>}
         {c.is_ocr && <span className="tag tag-ocr">OCR</span>}
         {c.has_table && <span className="tag tag-table">表格</span>}
-        {c.score > 0 && <span className="score-badge">相似度 {(c.score * 100).toFixed(1)}%</span>}
+        {c.score > 0 && <span className="score-badge">相關度 {(c.score * 100).toFixed(0)}%</span>}
       </div>
       {c.document && (
         fileUrl
-          ? <a href={fileUrl} target="_blank" rel="noreferrer" style={{ fontSize: "0.78rem", color: "#6366f1", marginBottom: 4, display: "block", textDecoration: "underline" }}>{c.document}</a>
-          : <div style={{ fontSize: "0.78rem", color: "#94a3b8", marginBottom: 4 }}>{c.document}</div>
+          ? <a href={fileUrl} target="_blank" rel="noreferrer" className="source-doc">{c.document}</a>
+          : <div className="source-doc muted">{c.document}</div>
       )}
       <div className="source-text">{c.text}</div>
     </div>
@@ -116,7 +116,7 @@ function TraceList({ trace }) {
           <code style={{ fontSize: "0.78rem" }}>{s.name}</code>
           {s.ms > 0 && <span style={{ color: "#94a3b8" }}> · {s.ms} ms</span>}
           {s.confident === false && <span style={{ color: "#f59e0b" }}> · 信心不足</span>}
-          {s.query_drift_detected && <span style={{ color: "#ef4444" }}> · 偵測到查詢漂移,已用原話重查</span>}
+          {s.query_drift_detected && <span style={{ color: "#ef4444" }}> · 改寫後結果與原問題不一致,已改用原問題結果</span>}
           {s.detail && <span style={{ color: "#64748b" }}> — {s.detail}</span>}
         </li>
       ))}
@@ -129,23 +129,13 @@ export default function QueryPanel({ apiKey = "" }) {
   const [topK, setTopK] = useState(5);
   const [showTrace, setShowTrace] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [slowWarning, setSlowWarning] = useState(false);
   const [result, setResult] = useState(null);
   const [liveSteps, setLiveSteps] = useState([]);
   const [error, setError] = useState("");
-  const timerRef = useRef(null);
-
-  // 送出超過 8 秒才提示暖機;timer 只在 loading 期間存在
-  useEffect(() => {
-    if (!loading) return undefined;
-    timerRef.current = setTimeout(() => setSlowWarning(true), 8000);
-    return () => clearTimeout(timerRef.current);
-  }, [loading]);
 
   async function submit() {
     if (!text.trim()) return;
     setLoading(true);
-    setSlowWarning(false);
     setError("");
     setResult(null);
     setLiveSteps([]);
@@ -168,21 +158,21 @@ export default function QueryPanel({ apiKey = "" }) {
 
   return (
     <div>
-      <div className="page-title">問答 / 審稿</div>
-      <div className="page-sub">問規定、查案例、或直接貼廣告文案,一個框就好;系統判定意圖後自己選路徑</div>
+      <div className="page-title">查詢</div>
+      <div className="page-sub">輸入法規問題、裁罰案例查詢,或貼上廣告文案進行審查。系統會判定問題類型並選擇對應的處理路徑。</div>
 
       <div className="card">
-        <div className="card-title">輸入</div>
+        <div className="card-title">問題或文案</div>
         <textarea
           rows={5}
-          placeholder={"例:" + EXAMPLES[0] + "\n例:" + EXAMPLES[2]}
+          placeholder="例如:真空包裝豆干要符合什麼規定?"
           value={text}
           onChange={e => setText(e.target.value)}
           onKeyDown={handleKey}
         />
         <div className="btn-row">
           <button className="btn btn-primary" onClick={submit} disabled={loading || !text.trim()}>
-            {loading ? <><span className="spinner" /> 查詢中…</> : "送出"}
+            {loading ? <><span className="spinner" /> 處理中</> : "送出查詢"}
           </button>
           <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.85rem", color: "#475569" }}>
             Top-K
@@ -194,25 +184,13 @@ export default function QueryPanel({ apiKey = "" }) {
               {[3, 5, 8, 10].map(v => <option key={v} value={v}>{v}</option>)}
             </select>
           </label>
-          <span style={{ fontSize: "0.78rem", color: "#94a3b8" }}>Ctrl+Enter 送出</span>
+          <span className="hint">Ctrl + Enter 送出</span>
         </div>
-        {loading && slowWarning && (
-          <p style={{ fontSize: "0.78rem", color: "#f59e0b", margin: "6px 0 0" }}>
-            伺服器暖機中,首次查詢較慢,請稍候…
-          </p>
-        )}
         {!result && !loading && (
-          <div className="keyword-list" style={{ marginTop: 10 }}>
+          <div className="examples">
+            <span className="examples-label">範例</span>
             {EXAMPLES.map((ex, i) => (
-              <span
-                key={i}
-                className="keyword-tag"
-                style={{ cursor: "pointer" }}
-                title="點擊帶入"
-                onClick={() => setText(ex)}
-              >
-                {ex}
-              </span>
+              <button key={i} type="button" className="example-chip" onClick={() => setText(ex)}>{ex}</button>
             ))}
           </div>
         )}
@@ -222,7 +200,7 @@ export default function QueryPanel({ apiKey = "" }) {
 
       {loading && (
         <div className="card">
-          <div className="card-title">執行中</div>
+          <div className="card-title">處理進度</div>
           {liveSteps.length > 0 && (() => {
             // 第一步 route 的 detail 是「intent (source) reason」,先從 intent 推出路徑,把整條路先畫出來
             const intent = (liveSteps[0].detail || "").split(" ")[0];
@@ -242,7 +220,7 @@ export default function QueryPanel({ apiKey = "" }) {
                 {s.detail && <span style={{ color: "#94a3b8" }}> — {s.detail.slice(0, 60)}</span>}
               </li>
             ))}
-            <li style={{ listStyle: "none", marginLeft: -20, color: "#6366f1" }}><span className="spinner" /> {liveSteps.length === 0 ? "送出中…" : "下一步…"}</li>
+            <li style={{ listStyle: "none", marginLeft: -20, color: "#6366f1" }}><span className="spinner" /> {liveSteps.length === 0 ? "已送出,等待伺服器回應" : "執行下一步"}</li>
           </ol>
         </div>
       )}
@@ -252,9 +230,10 @@ export default function QueryPanel({ apiKey = "" }) {
           <div className="card">
             <div className="meta-row" style={{ marginBottom: 10 }}>
               <span>
-                意圖 <strong>{INTENT_LABEL[result.route.intent] ?? result.route.intent}</strong>
-                ({SOURCE_LABEL[result.route.source] ?? result.route.source}
-                {result.route.router_ms ? `,${result.route.router_ms} ms` : ""}) → 路徑 <strong>{HANDLER_LABEL[result.route.handler] ?? result.route.handler}</strong>
+                問題類型 <strong>{INTENT_LABEL[result.route.intent] ?? result.route.intent}</strong>
+                <span className="muted">(由{SOURCE_LABEL[result.route.source] ?? result.route.source}判定{result.route.router_ms ? `,${result.route.router_ms} ms` : ""})</span>
+                <span className="sep">→</span>
+                處理路徑 <strong>{HANDLER_LABEL[result.route.handler] ?? result.route.handler}</strong>
               </span>
               {result.route.reason && <span style={{ color: "#94a3b8" }}>{result.route.reason}</span>}
             </div>
@@ -262,19 +241,21 @@ export default function QueryPanel({ apiKey = "" }) {
             {isReview ? (
               <>
                 <div className={`verdict ${vd.cls}`}>{vd.label}</div>
-                <div className="card-title">審核意見</div>
+                <div className="card-title">審查意見</div>
               </>
             ) : (
               <>
-                {result.meta.confident === false ? (
-                  <span className="verdict verdict-warn">⚠️ 信心不足,誠實拒答</span>
+                {result.meta.refused ? (
+                  <span className="verdict verdict-warn">未找到可信依據,不作答</span>
+                ) : result.meta.confident === false ? (
+                  <span className="verdict verdict-warn">法規段落信心不足,僅依案例作答</span>
                 ) : result.meta.confident === true ? (
-                  <span className="verdict verdict-pass">✓ 已找到可信法規依據</span>
+                  <span className="verdict verdict-pass">已依可信法規段落作答</span>
                 ) : null}
                 {result.meta.used_retry && (
                   <p style={{ fontSize: "0.78rem", color: "#94a3b8", margin: "0 0 10px" }}>
-                    系統自動把問題換一種說法重新檢索過一次
-                    {result.meta.confident ? ",這次找到了可信的依據。" : ",但仍未找到足夠可信的依據。"}
+                    第一次檢索信心不足,系統已改寫問題重新檢索一次
+                    {result.meta.confident ? ",第二次找到可信段落。" : ",第二次仍未達門檻。"}
                   </p>
                 )}
                 <div className="card-title">回答</div>
@@ -288,22 +269,22 @@ export default function QueryPanel({ apiKey = "" }) {
               {result.meta.llm_ms > 0 && <span>LLM {result.meta.llm_ms} ms</span>}
               <span>模型 {result.meta.model}</span>
               <span>LLM 呼叫 {result.usage.llm_calls} 次 · {result.usage.total_tokens.toLocaleString()} tokens · {result.usage.elapsed_s}s</span>
-              {result.meta.hit_tool_call_limit && <span style={{ color: "#f59e0b" }}>已達工具呼叫上限</span>}
+              {result.meta.hit_tool_call_limit && <span className="warn">已達工具呼叫上限</span>}
               {result.meta.unsupported_citations?.length > 0 && (
-                <span style={{ color: "#ef4444" }}>⚠ 引用了檢索內容裡沒有的條號:{result.meta.unsupported_citations.join("、")}</span>
+                <span className="danger">以下條號未出現在檢索內容中:{result.meta.unsupported_citations.join("、")}</span>
               )}
-              {result.meta.citation_regenerated && <span style={{ color: "#94a3b8" }}>引用驗證未過,已重新生成</span>}
+              {result.meta.citation_regenerated && <span className="muted">引用驗證未通過,已重新生成一次</span>}
             </div>
 
           </div>
 
           <div className="card">
-            <div className="card-title">路徑圖:{HANDLER_LABEL[result.route.handler] ?? result.route.handler}</div>
-            <div style={{ margin: "0 0 8px", fontSize: "0.8rem", color: "#64748b" }}>這條路徑的完整步驟,用這次的執行軌跡上色</div>
+            <div className="card-title">處理路徑:{HANDLER_LABEL[result.route.handler] ?? result.route.handler}</div>
+            <div className="card-sub">此路徑的完整步驟,依本次執行結果標示</div>
             <PipelineDiagram result={result} />
             <div className="meta-row" style={{ marginTop: 10 }}>
               <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => setShowTrace(v => !v)}>
-                {showTrace ? "收起" : "展開"}執行軌跡({result.trace.length} 步)
+                {showTrace ? "收合" : "展開"}執行紀錄({result.trace.length} 步)
               </span>
               {!showTrace && <span>{result.trace.map(s => s.name).join(" → ")}</span>}
             </div>
@@ -312,7 +293,7 @@ export default function QueryPanel({ apiKey = "" }) {
 
           {isReview && result.matched_keywords?.length > 0 && (
             <div className="card">
-              <div className="card-title">偵測到的風險關鍵字</div>
+              <div className="card-title">高風險用語</div>
               <div className="keyword-list">
                 {result.matched_keywords.map((kw, i) => <span key={i} className="keyword-tag">{kw}</span>)}
               </div>
@@ -321,7 +302,7 @@ export default function QueryPanel({ apiKey = "" }) {
 
           {result.sources?.length > 0 && (
             <div className="card">
-              <div className="card-title">{isReview ? "相關法規依據" : "參考法規來源"}({result.sources.length} 筆)</div>
+              <div className="card-title">法規依據 <span className="count">{result.sources.length}</span></div>
               <div className="sources-list">
                 {result.sources.map((c, i) => <SourceItem key={i} c={c} />)}
               </div>
@@ -330,7 +311,7 @@ export default function QueryPanel({ apiKey = "" }) {
 
           {result.related_cases?.length > 0 && (
             <div className="card">
-              <div className="card-title">{isReview ? "相似違規案例" : "相關違規案例"}({result.related_cases.length} 筆)</div>
+              <div className="card-title">相關裁罰案例 <span className="count">{result.related_cases.length}</span></div>
               <CasesTable cases={result.related_cases} />
             </div>
           )}

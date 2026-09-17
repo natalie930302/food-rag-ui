@@ -70,9 +70,9 @@ function FixedPath({ trace, meta, live }) {
   return (
     <svg viewBox="0 0 900 250" width="100%" role="img" aria-label="固定路徑的步驟圖">
       <Defs />
-      <Node x={10} y={20} w={90} label="判定意圖" state="done" pulse={last === "route"} />
+      <Node x={10} y={20} w={90} label="判定類型" state="done" pulse={last === "route"} />
       <Arrow d="M104 48 L116 48" />
-      <Node x={120} y={20} w={95} label="拆子問題" pulse={last === "decompose"} sub={dec ? `${(dec.arguments?.subquestions || []).length} 個子問題` : "單一問題,不拆"} state={dec ? "done" : "skip"} />
+      <Node x={120} y={20} w={95} label="拆子問題" pulse={last === "decompose"} sub={dec ? `${(dec.arguments?.subquestions || []).length} 個子問題` : "單一問題"} state={dec ? "done" : "skip"} />
       <Arrow d="M219 48 L236 48" />
       {/* 檢索管線 group */}
       <rect x={240} y={8} width={440} height={80} rx={12} fill={C.group.fill} stroke={C.group.stroke} strokeWidth={1} strokeDasharray="5 4" />
@@ -85,14 +85,14 @@ function FixedPath({ trace, meta, live }) {
       <Arrow d="M564 50 L572 50" on={rets.length > 0} />
       <Node x={576} y={24} w={96} h={52} label="信心閘門" sub={gateState === "skip" ? "≥ 0.52 才放行" : `${pct(bestRet)} ${anyRetOk ? "通過" : "未過"}`} state={gateState} pulse={last === "retrieve"} />
       <Arrow d="M684 48 L696 48" on={retries.length > 0} />
-      <Node x={700} y={20} w={95} label="改寫重查" sub={retries.length ? (anyRetryOk ? "改寫後通過" : "改寫後仍未過") : "閘門有過,不需要"} state={retryState} pulse={last === "retry"} />
+      <Node x={700} y={20} w={95} label="改寫重查" sub={retries.length ? (anyRetryOk ? "改寫後通過門檻" : "改寫後仍未達門檻") : "閘門已通過"} state={retryState} pulse={last === "retry"} />
       {/* 換行連接 */}
       <path d="M 747 80 L 747 118 L 55 118 L 55 146" fill="none" stroke="#6366f1" strokeWidth={1.2} markerEnd="url(#pd-arrow-on)" />
-      <Node x={10} y={150} w={90} label="查案例" pulse={last === "retrieve_cases"} sub={!cases ? "這題不需要" : cases.confident === false ? "相似度不足,不採用" : `${cases.chunk_ids?.length ?? 0} 筆,過門檻`} state={casesState} />
+      <Node x={10} y={150} w={90} label="查案例" pulse={last === "retrieve_cases"} sub={!cases ? "本次未觸發" : cases.confident === false ? "相關度不足,不採用" : `${cases.chunk_ids?.length ?? 0} 筆,達門檻`} state={casesState} />
       <Arrow d="M104 178 L116 178" />
       <Node x={120} y={150} w={120} pulse={last === "generate" || last === "refuse"} label={genState === "alt" ? "拒答" : "生成答案"} sub={genState === "alt" ? "法規與案例都不可信,不呼叫 LLM" : gen ? (meta?.confident === false ? "只憑案例作答" : "gpt-4o-mini 依段落作答") : ""} state={genState} />
       <Arrow d="M244 178 L256 178" on={!!gen} />
-      <Node x={260} y={150} w={100} label="引用驗證" pulse={last === "verify_citations"} sub={ver ? (ver.detail?.includes("unsupported=0") ? "條號全部對得上" : "有條號對不上") : (live ? "" : "拒答不需驗證")} state={ver ? (ver.detail?.includes("unsupported=0") ? "done" : "fail") : "skip"} />
+      <Node x={260} y={150} w={100} label="引用驗證" pulse={last === "verify_citations"} sub={ver ? (ver.detail?.includes("unsupported=0") ? "條號全部對得上" : "有條號對不上") : (live ? "" : "未作答,免驗證")} state={ver ? (ver.detail?.includes("unsupported=0") ? "done" : "fail") : "skip"} />
       <Arrow d="M364 178 L376 178" on={!live} />
       <Node x={380} y={150} w={80} label="回傳" state={live ? "skip" : "done"} />
     </svg>
@@ -113,7 +113,7 @@ function ReviewPath({ trace, result, live }) {
   return (
     <svg viewBox="0 0 900 250" width="100%" role="img" aria-label="審稿路徑的步驟圖">
       <Defs />
-      <Node x={10} y={20} w={90} label="判定意圖" state="done" />
+      <Node x={10} y={20} w={90} label="判定類型" state="done" />
       <Arrow d="M104 48 L116 48" />
       <Node x={120} y={20} w={110} pulse={last === "keyword_scan"} label="風險字掃描" sub={scan ? `${nKw} 個高風險詞` : ""} state={scan ? "done" : "skip"} />
       <Arrow d="M234 48 L246 48" />
@@ -152,23 +152,23 @@ function AgentPath({ trace, meta, live }) {
   const seq = n => (n.length ? `第 ${n.join("、")} 次` : "");
   const grounded = live ? undefined : meta?.grounded;
   return (
-    <svg viewBox="0 0 900 300" width="100%" role="img" aria-label="agent 路徑的步驟圖">
+    <svg viewBox="0 0 905 300" width="100%" role="img" aria-label="agent 路徑的步驟圖">
       <Defs />
-      <Node x={10} y={122} w={90} label="判定意圖" state="done" />
+      <Node x={10} y={122} w={90} label="判定類型" state="done" />
       <Arrow d="M104 150 L116 150" />
       <rect x={120} y={10} width={340} height={280} rx={12} fill={C.group.fill} stroke={C.group.stroke} strokeWidth={1} strokeDasharray="5 4" />
-      <text x={132} y={22} fontSize={11} fill={C.group.text} dominantBaseline="central">LLM 決策迴圈:自己選工具、自己決定查幾次(最多 4 次);共呼叫 {tools.length} 次</text>
-      <Node x={136} y={36} w={308} h={70} pulse={last === "tool:search_regulations"} label="工具:查法規(= 檢索管線 + 改寫重查)" sub={reg.length ? `${seq(order("tool:search_regulations"))}${regOk ? " · 有可信段落" : " · 都未過閘門"}${regFlags ? " · " + regFlags : ""}` : "沒呼叫"} state={reg.length ? (regOk ? "done" : "fail") : "skip"} badge={forced ? "強制" : undefined} />
-      <Node x={136} y={120} w={308} pulse={last === "tool:search_violation_cases"} label="工具:查案例" sub={cas.length ? `${seq(order("tool:search_violation_cases"))} · ${casOk ? "相似度過門檻,可當依據" : "相似度不足,不採用"}` : "沒呼叫"} state={cas.length ? (casOk ? "done" : "fail") : "skip"} />
-      <Node x={136} y={190} w={308} pulse={last === "tool:search_related_laws"} label="工具:查關聯法條" sub={rel.length ? `${seq(order("tool:search_related_laws"))} · 條文共現統計(只當引用證據)` : "沒呼叫"} state={rel.length ? "done" : "skip"} />
+      <text x={132} y={22} fontSize={11} fill={C.group.text} dominantBaseline="central">LLM 決策迴圈:由模型選擇工具與呼叫次數(上限 4 次);本次 {tools.length} 次</text>
+      <Node x={136} y={36} w={308} h={70} pulse={last === "tool:search_regulations"} label="工具:查法規(= 檢索管線 + 改寫重查)" sub={reg.length ? `${seq(order("tool:search_regulations"))}${regOk ? " · 有可信段落" : " · 都未過閘門"}${regFlags ? " · " + regFlags : ""}` : "未呼叫"} state={reg.length ? (regOk ? "done" : "fail") : "skip"} badge={forced ? "系統補查" : undefined} />
+      <Node x={136} y={120} w={308} pulse={last === "tool:search_violation_cases"} label="工具:查案例" sub={cas.length ? `${seq(order("tool:search_violation_cases"))} · ${casOk ? "相似度過門檻,可當依據" : "相關度不足,不採用"}` : "未呼叫"} state={cas.length ? (casOk ? "done" : "fail") : "skip"} />
+      <Node x={136} y={190} w={308} pulse={last === "tool:search_related_laws"} label="工具:查關聯法條" sub={rel.length ? `${seq(order("tool:search_related_laws"))} · 條文共現統計(只當引用證據)` : "未呼叫"} state={rel.length ? "done" : "skip"} />
       <Arrow d="M464 150 L476 150" />
-      <Node x={480} y={122} w={125} label="harness 檢查" sub={live ? (forced ? "未查法規→強制補查" : "作答前檢查") : `${forced ? "未查法規→強制補查 · " : ""}${grounded === false ? "沒可信依據→拒答" : "有可信依據"}`} state={live ? (last === "generate" ? "done" : "skip") : grounded === false ? "fail" : "done"} />
-      <Arrow d="M609 150 L621 150" />
-      <Node x={625} y={122} w={90} pulse={last === "generate"} label={grounded === false ? "拒答" : "生成答案"} sub={gen?.detail?.includes("regenerated=True") ? "引用不符,重寫過一次" : ""} state={grounded === false ? "alt" : gen ? "done" : "skip"} />
-      <Arrow d="M719 150 L731 150" on={grounded !== false} />
-      <Node x={735} y={122} w={85} label="引用驗證" sub={live ? "" : grounded === false ? "拒答不需驗證" : (meta?.unsupported_citations?.length ? "有條號對不上" : "全部對得上")} state={live ? "skip" : grounded === false ? "skip" : (meta?.unsupported_citations?.length ? "fail" : "done")} />
-      <Arrow d="M824 150 L836 150" on={!live} />
-      <Node x={840} y={122} w={55} label="回傳" state={live ? "skip" : "done"} />
+      <Node x={480} y={122} w={140} label="harness 檢查" badge={forced ? "補查" : undefined} sub={live ? "作答前檢查" : (grounded === false ? "無可信依據,改為拒答" : "有可信依據,准許作答")} state={live ? (last === "generate" ? "done" : "skip") : grounded === false ? "fail" : "done"} />
+      <Arrow d="M624 150 L636 150" />
+      <Node x={640} y={122} w={90} pulse={last === "generate"} label={grounded === false ? "拒答" : "生成答案"} sub={gen?.detail?.includes("regenerated=True") ? "引用不符,重寫過一次" : ""} state={grounded === false ? "alt" : gen ? "done" : "skip"} />
+      <Arrow d="M734 150 L746 150" on={grounded !== false} />
+      <Node x={750} y={122} w={85} label="引用驗證" sub={live ? "" : grounded === false ? "未作答,免驗證" : (meta?.unsupported_citations?.length ? "有條號對不上" : "全部對得上")} state={live ? "skip" : grounded === false ? "skip" : (meta?.unsupported_citations?.length ? "fail" : "done")} />
+      <Arrow d="M839 150 L851 150" on={!live} />
+      <Node x={855} y={122} w={45} label="回傳" state={live ? "skip" : "done"} />
     </svg>
   );
 }
@@ -177,7 +177,7 @@ export default function PipelineDiagram({ result, live = false }) {
   const { route, trace, meta } = result;
   const legend = (
     <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: "0.74rem", color: "#64748b", marginTop: 4 }}>
-      {[["done", "走過"], ["fail", "走過但沒過關"], ["alt", "替代步驟"], ["skip", "這次用不到"]].map(([k, t]) => (
+      {[["done", "已執行"], ["fail", "執行但未通過"], ["alt", "替代步驟"], ["skip", "本次未觸發"]].map(([k, t]) => (
         <span key={k} style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
           <span style={{ width: 12, height: 12, borderRadius: 3, background: C[k].fill, border: `1.5px ${C[k].dash ? "dashed" : "solid"} ${C[k].stroke}` }} />{t}
         </span>

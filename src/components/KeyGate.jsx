@@ -24,7 +24,7 @@ export default function KeyGate({ onKey }) {
     e.preventDefault();
     const k = val.trim();
     if (!k.startsWith("sk-")) {
-      setErr("Key 格式不對，應以 sk- 開頭");
+      setErr("金鑰格式不正確,應以 sk- 開頭");
       return;
     }
     localStorage.setItem("openai_key", k);
@@ -40,9 +40,9 @@ export default function KeyGate({ onKey }) {
         background: "#1a2535", borderRadius: 12, padding: "40px 36px",
         width: 380, boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
       }}>
-        <h2 style={{ color: "#e2eaf4", marginBottom: 8 }}>食品法規 RAG</h2>
+        <h2 style={{ color: "#e2eaf4", marginBottom: 8, fontWeight: 600 }}>食品法規查詢系統</h2>
         <p style={{ color: "#6b7fa0", fontSize: 14, marginBottom: 8 }}>
-          本系統需使用 LLM，採用 <code style={{ color: "#94a3b8" }}>gpt-4o-mini</code>，請輸入你的{" "}
+          答案由 <code style={{ color: "#94a3b8" }}>gpt-4o-mini</code> 依檢索到的法規段落生成。請提供{" "}
           <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer"
             style={{ color: "#60a5fa" }}>
             OpenAI API Key
@@ -50,7 +50,7 @@ export default function KeyGate({ onKey }) {
           。
         </p>
         <p style={{ color: "#4a5f7a", fontSize: 12, marginBottom: 24 }}>
-          Key 僅存於瀏覽器本地，不會上傳至伺服器以外。
+          金鑰只儲存在此瀏覽器,僅用於向 OpenAI 發出請求,不會寫入伺服器。
         </p>
         <input
           type="password"
@@ -71,7 +71,7 @@ export default function KeyGate({ onKey }) {
           background: "#2563eb", color: "#fff", border: "none",
           fontSize: 14, cursor: "pointer", marginTop: 4,
         }}>
-          進入系統
+          開始使用
         </button>
         {serverHasKey && (
           <button type="button" onClick={useServerKey} style={{
@@ -79,7 +79,7 @@ export default function KeyGate({ onKey }) {
             background: "transparent", color: "#94a3b8", border: "1px solid #2d3f5a",
             fontSize: 13, cursor: "pointer", marginTop: 10,
           }}>
-            使用伺服器設定的 Key(不輸入)
+            使用伺服器端設定的金鑰
           </button>
         )}
       </form>
