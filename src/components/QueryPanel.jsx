@@ -27,6 +27,15 @@ const STEP_LABEL = {
 
 function stepLabel(name) { return STEP_LABEL[name] ?? name; }
 
+// 後端 prompt 已要求純文字;這裡再把殘留的 Markdown 符號清掉(**粗體**、# 標題、行首 - 改成 ・)
+function plainText(t) {
+  return (t || "")
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/^#{1,6}\s*/gm, "")
+    .replace(/^\s*[-*]\s+/gm, "・")
+    .replace(/`([^`]+)`/g, "$1");
+}
+
 const VERDICT_MAP = {
   low:    { cls: "verdict-pass", label: "🟢 低風險" },
   medium: { cls: "verdict-warn", label: "🟡 中風險" },
@@ -272,7 +281,7 @@ export default function QueryPanel({ apiKey = "" }) {
               </>
             )}
 
-            <div className="answer-box">{result.answer}</div>
+            <div className="answer-box">{plainText(result.answer)}</div>
 
             <div className="meta-row">
               {result.meta.retrieval_ms > 0 && <span>檢索 {result.meta.retrieval_ms} ms</span>}
