@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { query } from "../api";
+import { queryStream } from "../api";
 
 // 單一窗口:問法規、查案例、貼廣告文案都丟同一格。
 // 後端 /query 先判「意圖」(規則層 → LLM 層)再分派到「路徑」;前端只依回傳的 route 決定怎麼呈現。
@@ -15,6 +15,63 @@ const INTENT_LABEL = {
 const HANDLER_LABEL = { regulation: "固定路徑", review: "審稿路徑", agent: "agent 路徑" };
 
 const SOURCE_LABEL = { rules: "規則層", llm: "LLM 層", forced: "指定" };
+
+// 每一步的中文名(trace step name → 顯示)
+const STEP_LABEL = {
+  route: "判定意圖", decompose: "拆子問題", retrieve: "檢索管線", retry: "改寫重查", retrieve_cases: "查案例",
+  refuse: "拒答", generate: "生成答案", verify_citations: "引用驗證", keyword_scan: "風險字掃描", verdict: "判燈號",
+  "tool:search_regulations": "工具:查法規", "tool:search_violation_cases": "工具:查案例",
+  "tool:search_related_laws": "工具:查關聯法條",
+};
+
+// 三條路徑的完整步驟(略過的也畫出來,灰色);agent 路徑的工具順序由 LLM 當場決定,所以依實際 trace 排
+const PATH_TEMPLATE = {
+  regulation: [
+    { name: "route" }, { name: "decompose", optional: true }, { name: "retrieve" }, { name: "retry", optional: true },
+    { name: "retrieve_cases", optional: true }, { name: "generate", alt: "refuse" }, { name: "verify_citations", optional: true },
+  ],
+  review: [
+    { name: "route" }, { name: "keyword_scan" }, { name: "retrieve" }, { name: "retrieve_cases" },
+    { name: "generate" }, { name: "verify_citations" }, { name: "verdict" },
+  ],
+};
+
+function stepLabel(name) { return STEP_LABEL[name] ?? name; }
+
+/** 路徑圖:每個格子 = 一步;done(走過)/ skipped(這次沒用到)/ alt(走了替代步驟,例如拒答代替生成) */
+function PathMap({ handler, trace }) {
+  const counts = {};
+  for (const s of trace) counts[s.name] = (counts[s.name] || 0) + 1;
+  let cells;
+  if (handler === "agent") {
+    cells = trace.map((s, i) => ({ key: i, label: stepLabel(s.name), state: "done", sub: s.confident === false ? "信心不足" : (s.query_drift_detected ? "漂移→原話重查" : "") }));
+  } else {
+    const tpl = PATH_TEMPLATE[handler] || [];
+    cells = tpl.map((t, i) => {
+      if (counts[t.name]) return { key: i, label: stepLabel(t.name) + (counts[t.name] > 1 ? ` ×${counts[t.name]}` : ""), state: "done", sub: "" };
+      if (t.alt && counts[t.alt]) return { key: i, label: stepLabel(t.alt), state: "alt", sub: "代替「" + stepLabel(t.name) + "」" };
+      return { key: i, label: stepLabel(t.name), state: "skipped", sub: t.optional ? "這次用不到" : "未執行" };
+    });
+  }
+  const style = {
+    done:    { background: "#e0e7ff", border: "1.5px solid #6366f1", color: "#312e81" },
+    alt:     { background: "#fef3c7", border: "1.5px solid #f59e0b", color: "#78350f" },
+    skipped: { background: "transparent", border: "1.5px dashed #cbd5e1", color: "#94a3b8" },
+  };
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+      {cells.map((c, i) => (
+        <div key={c.key} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ ...style[c.state], borderRadius: 8, padding: "6px 10px", fontSize: "0.8rem", lineHeight: 1.3, textAlign: "center" }}>
+            <div>{c.label}</div>
+            {c.sub && <div style={{ fontSize: "0.68rem", opacity: 0.8 }}>{c.sub}</div>}
+          </div>
+          {i < cells.length - 1 && <span style={{ color: "#94a3b8" }}>→</span>}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 const VERDICT_MAP = {
   low:    { cls: "verdict-pass", label: "🟢 低風險" },
@@ -111,6 +168,7 @@ export default function QueryPanel({ apiKey = "" }) {
   const [loading, setLoading] = useState(false);
   const [slowWarning, setSlowWarning] = useState(false);
   const [result, setResult] = useState(null);
+  const [liveSteps, setLiveSteps] = useState([]);
   const [error, setError] = useState("");
   const timerRef = useRef(null);
 
@@ -127,8 +185,9 @@ export default function QueryPanel({ apiKey = "" }) {
     setSlowWarning(false);
     setError("");
     setResult(null);
+    setLiveSteps([]);
     try {
-      const data = await query(text, { topK, apiKey });
+      const data = await queryStream(text, { topK, apiKey, onStep: s => setLiveSteps(prev => [...prev, s]) });
       setResult(data);
     } catch (e) {
       setError(e.message);
@@ -198,6 +257,23 @@ export default function QueryPanel({ apiKey = "" }) {
 
       {error && <div className="error-msg">{error}</div>}
 
+      {loading && (
+        <div className="card">
+          <div className="card-title">執行中</div>
+          <ol style={{ margin: 0, paddingLeft: 20, fontSize: "0.85rem", color: "#475569", lineHeight: 1.8 }}>
+            {liveSteps.map((s, i) => (
+              <li key={i}>
+                <strong>{stepLabel(s.name)}</strong>
+                {s.ms > 0 && <span style={{ color: "#94a3b8" }}> · {s.ms} ms</span>}
+                {s.confident === false && <span style={{ color: "#f59e0b" }}> · 信心不足</span>}
+                {s.detail && <span style={{ color: "#94a3b8" }}> — {s.detail.slice(0, 60)}</span>}
+              </li>
+            ))}
+            <li style={{ listStyle: "none", marginLeft: -20, color: "#6366f1" }}><span className="spinner" /> {liveSteps.length === 0 ? "送出中…" : "下一步…"}</li>
+          </ol>
+        </div>
+      )}
+
       {result && (
         <>
           <div className="card">
@@ -246,7 +322,12 @@ export default function QueryPanel({ apiKey = "" }) {
               {result.meta.citation_regenerated && <span style={{ color: "#94a3b8" }}>引用驗證未過,已重新生成</span>}
             </div>
 
-            <div className="meta-row">
+            <div style={{ margin: "10px 0 6px", fontSize: "0.8rem", color: "#64748b" }}>
+              路徑圖({HANDLER_LABEL[result.route.handler] ?? result.route.handler}):亮的是這次走過的步驟,灰的是這條路徑有但這次用不到的
+            </div>
+            <PathMap handler={result.route.handler} trace={result.trace} />
+
+            <div className="meta-row" style={{ marginTop: 10 }}>
               <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => setShowTrace(v => !v)}>
                 {showTrace ? "收起" : "展開"}執行軌跡({result.trace.length} 步)
               </span>

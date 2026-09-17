@@ -6,13 +6,13 @@
 
 ## 分頁
 
-- **問答 / 審稿**:單一入口,不需要選模式;後端判定意圖(問規定 / 查案例 / 審稿 / 多步)後自己選路徑(固定 / 審稿 / agent),畫面顯示「意圖(哪一層判的)→ 路徑」
+- **問答 / 審稿**:單一入口,不需要選模式;後端判定意圖(問規定 / 查案例 / 審稿 / 多步)後自己選路徑(固定 / 審稿 / agent),畫面顯示「意圖(哪一層判的)→ 路徑」;查詢中即時列出跑到哪一步(`POST /query/stream`,SSE),查完畫出該路徑的步驟圖(走過的亮、略過的灰)
 - **索引統計 / 失敗檔案**:`GET /health`
 
 ## 結構
 
 - `src/App.jsx` — 側欄與分頁
-- `src/api.js` — 與後端溝通(`query()`、`getHealth()`、`getLawRelated()`)
+- `src/api.js` — 與後端溝通(`queryStream()` 走 SSE、`query()`、`getHealth()`)
 - `src/components/QueryPanel.jsx` — 單一入口與結果呈現
 - `src/components/KeyGate.jsx` — 使用者自帶 OpenAI key;**只存在瀏覽器 localStorage,不經過任何伺服器**
 
