@@ -93,8 +93,8 @@ function FixedPath({ trace, meta, live }) {
       <Node x={120} y={150} w={120} pulse={last === "generate" || last === "refuse"} label={genState === "alt" ? "拒答" : "生成答案"} sub={genState === "alt" ? "法規與案例都不可信,不呼叫 LLM" : gen ? (meta?.confident === false ? "只憑案例作答" : "gpt-4o-mini 依段落作答") : ""} state={genState} />
       <Arrow d="M244 178 L256 178" on={!!gen} />
       <Node x={260} y={150} w={100} label="引用驗證" pulse={last === "verify_citations"} sub={ver ? (ver.detail?.includes("unsupported=0") ? "條號全部對得上" : "有條號對不上") : (live ? "" : "拒答不需驗證")} state={ver ? (ver.detail?.includes("unsupported=0") ? "done" : "fail") : "skip"} />
-      <Arrow d="M364 178 L376 178" />
-      <Node x={380} y={150} w={80} label="回傳" state="done" />
+      <Arrow d="M364 178 L376 178" on={!live} />
+      <Node x={380} y={150} w={80} label="回傳" state={live ? "skip" : "done"} />
     </svg>
   );
 }
@@ -126,8 +126,8 @@ function ReviewPath({ trace, result, live }) {
       <Node x={10} y={150} w={100} label="引用驗證" pulse={last === "verify_citations"} sub={ver ? (ver.detail?.includes("unsupported=0") ? "條號全部對得上" : "有條號對不上") : ""} state={ver ? (ver.detail?.includes("unsupported=0") ? "done" : "fail") : "skip"} />
       <Arrow d="M114 178 L126 178" />
       <Node x={130} y={150} w={100} pulse={last === "verdict"} label="判燈號" sub={verdictLabel} state={vd ? (result?.verdict === "high" ? "fail" : result?.verdict === "medium" ? "alt" : "done") : "skip"} />
-      <Arrow d="M234 178 L246 178" />
-      <Node x={250} y={150} w={80} label="回傳" state="done" />
+      <Arrow d="M234 178 L246 178" on={!live} />
+      <Node x={250} y={150} w={80} label="回傳" state={live ? "skip" : "done"} />
     </svg>
   );
 }
@@ -162,13 +162,13 @@ function AgentPath({ trace, meta, live }) {
       <Node x={136} y={120} w={308} pulse={last === "tool:search_violation_cases"} label="工具:查案例" sub={cas.length ? `${seq(order("tool:search_violation_cases"))} · ${casOk ? "相似度過門檻,可當依據" : "相似度不足,不採用"}` : "沒呼叫"} state={cas.length ? (casOk ? "done" : "fail") : "skip"} />
       <Node x={136} y={190} w={308} pulse={last === "tool:search_related_laws"} label="工具:查關聯法條" sub={rel.length ? `${seq(order("tool:search_related_laws"))} · 條文共現統計(只當引用證據)` : "沒呼叫"} state={rel.length ? "done" : "skip"} />
       <Arrow d="M464 150 L476 150" />
-      <Node x={480} y={122} w={125} label="harness 檢查" sub={`${forced ? "未查法規→強制補查 · " : ""}${grounded === false ? "沒可信依據→拒答" : "有可信依據"}`} state={grounded === false ? "fail" : "done"} />
+      <Node x={480} y={122} w={125} label="harness 檢查" sub={live ? (forced ? "未查法規→強制補查" : "作答前檢查") : `${forced ? "未查法規→強制補查 · " : ""}${grounded === false ? "沒可信依據→拒答" : "有可信依據"}`} state={live ? (last === "generate" ? "done" : "skip") : grounded === false ? "fail" : "done"} />
       <Arrow d="M609 150 L621 150" />
       <Node x={625} y={122} w={90} pulse={last === "generate"} label={grounded === false ? "拒答" : "生成答案"} sub={gen?.detail?.includes("regenerated=True") ? "引用不符,重寫過一次" : ""} state={grounded === false ? "alt" : gen ? "done" : "skip"} />
       <Arrow d="M719 150 L731 150" on={grounded !== false} />
-      <Node x={735} y={122} w={85} label="引用驗證" sub={grounded === false ? "拒答不需驗證" : (meta?.unsupported_citations?.length ? "有條號對不上" : "全部對得上")} state={grounded === false ? "skip" : (meta?.unsupported_citations?.length ? "fail" : "done")} />
-      <Arrow d="M824 150 L836 150" />
-      <Node x={840} y={122} w={55} label="回傳" state="done" />
+      <Node x={735} y={122} w={85} label="引用驗證" sub={live ? "" : grounded === false ? "拒答不需驗證" : (meta?.unsupported_citations?.length ? "有條號對不上" : "全部對得上")} state={live ? "skip" : grounded === false ? "skip" : (meta?.unsupported_citations?.length ? "fail" : "done")} />
+      <Arrow d="M824 150 L836 150" on={!live} />
+      <Node x={840} y={122} w={55} label="回傳" state={live ? "skip" : "done"} />
     </svg>
   );
 }
