@@ -295,11 +295,12 @@ export default function QueryPanel({ apiKey = "" }) {
               {result.meta.citation_regenerated && <span style={{ color: "#94a3b8" }}>引用驗證未過,已重新生成</span>}
             </div>
 
-            <div style={{ margin: "12px 0 4px", fontSize: "0.8rem", color: "#64748b" }}>
-              路徑圖({HANDLER_LABEL[result.route.handler] ?? result.route.handler}):這條路徑的完整步驟,用這次的執行軌跡上色
-            </div>
-            <PipelineDiagram result={result} />
+          </div>
 
+          <div className="card">
+            <div className="card-title">路徑圖:{HANDLER_LABEL[result.route.handler] ?? result.route.handler}</div>
+            <div style={{ margin: "0 0 8px", fontSize: "0.8rem", color: "#64748b" }}>這條路徑的完整步驟,用這次的執行軌跡上色</div>
+            <PipelineDiagram result={result} />
             <div className="meta-row" style={{ marginTop: 10 }}>
               <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => setShowTrace(v => !v)}>
                 {showTrace ? "收起" : "展開"}執行軌跡({result.trace.length} 步)
