@@ -2,30 +2,25 @@ import { useState, useEffect, useRef } from "react";
 import { query } from "../api";
 
 // 單一窗口:問法規、查案例、貼廣告文案都丟同一格。
-// 後端 /query 先判斷意圖(規則層 → LLM 層)再分派;前端只依回傳的 route.intent 決定怎麼呈現。
+// 後端 /query 先判「意圖」(規則層 → LLM 層)再分派到「路徑」;前端只依回傳的 route 決定怎麼呈現。
+// 名詞跟 README 一致:意圖 4 種(問規定 / 查案例 / 審稿 / 多步)→ 路徑 3 條(固定 / 審稿 / agent)。
 
 const INTENT_LABEL = {
-  regulation_qa: "法規問答",
-  case_lookup:   "查裁罰案例",
-  ad_review:     "廣告審稿",
-  multi_hop:     "多步查詢(agent)",
+  regulation_qa: "問規定",
+  case_lookup:   "查案例",
+  ad_review:     "審稿",
+  multi_hop:     "多步",
 };
 
-const SOURCE_LABEL = { rules: "規則層", llm: "LLM 層", forced: "手動指定" };
+const HANDLER_LABEL = { regulation: "固定路徑", review: "審稿路徑", agent: "agent 路徑" };
+
+const SOURCE_LABEL = { rules: "規則層", llm: "LLM 層", forced: "指定" };
 
 const VERDICT_MAP = {
   low:    { cls: "verdict-pass", label: "🟢 低風險" },
   medium: { cls: "verdict-warn", label: "🟡 中風險" },
   high:   { cls: "verdict-fail", label: "🔴 高風險" },
 };
-
-const MODES = [
-  { value: "",              label: "自動判斷(預設)" },
-  { value: "regulation_qa", label: "只查法規" },
-  { value: "case_lookup",   label: "一定要查案例" },
-  { value: "ad_review",     label: "當成廣告文案審稿" },
-  { value: "multi_hop",     label: "強制走 agent 多步查" },
-];
 
 const EXAMPLES = [
   "真空包裝豆干要符合什麼規定?",
@@ -111,7 +106,6 @@ function TraceList({ trace }) {
 
 export default function QueryPanel({ apiKey = "" }) {
   const [text, setText] = useState("");
-  const [mode, setMode] = useState("");
   const [topK, setTopK] = useState(5);
   const [showTrace, setShowTrace] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -134,7 +128,7 @@ export default function QueryPanel({ apiKey = "" }) {
     setError("");
     setResult(null);
     try {
-      const data = await query(text, { topK, forceIntent: mode || null, apiKey });
+      const data = await query(text, { topK, apiKey });
       setResult(data);
     } catch (e) {
       setError(e.message);
@@ -153,7 +147,7 @@ export default function QueryPanel({ apiKey = "" }) {
   return (
     <div>
       <div className="page-title">問答 / 審稿</div>
-      <div className="page-sub">問規定、找裁罰案例、或直接貼廣告文案 — 系統自己判斷該怎麼查</div>
+      <div className="page-sub">問規定、查案例、或直接貼廣告文案,一個框就好;系統判定意圖後自己選路徑</div>
 
       <div className="card">
         <div className="card-title">輸入</div>
@@ -168,16 +162,6 @@ export default function QueryPanel({ apiKey = "" }) {
           <button className="btn btn-primary" onClick={submit} disabled={loading || !text.trim()}>
             {loading ? <><span className="spinner" /> 查詢中…</> : "送出"}
           </button>
-          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.85rem", color: "#475569" }}>
-            模式
-            <select
-              value={mode}
-              onChange={e => setMode(e.target.value)}
-              style={{ border: "1.5px solid #e2e8f0", borderRadius: 6, padding: "4px 8px", fontFamily: "inherit", fontSize: "0.85rem" }}
-            >
-              {MODES.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-            </select>
-          </label>
           <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.85rem", color: "#475569" }}>
             Top-K
             <select
@@ -219,9 +203,9 @@ export default function QueryPanel({ apiKey = "" }) {
           <div className="card">
             <div className="meta-row" style={{ marginBottom: 10 }}>
               <span>
-                路由 → <strong>{INTENT_LABEL[result.route.intent] ?? result.route.intent}</strong>
+                意圖 <strong>{INTENT_LABEL[result.route.intent] ?? result.route.intent}</strong>
                 ({SOURCE_LABEL[result.route.source] ?? result.route.source}
-                {result.route.router_ms ? `,${result.route.router_ms} ms` : ""})
+                {result.route.router_ms ? `,${result.route.router_ms} ms` : ""}) → 路徑 <strong>{HANDLER_LABEL[result.route.handler] ?? result.route.handler}</strong>
               </span>
               {result.route.reason && <span style={{ color: "#94a3b8" }}>{result.route.reason}</span>}
             </div>

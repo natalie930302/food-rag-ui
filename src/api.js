@@ -12,9 +12,9 @@ function authHeaders(apiKey) {
 
 /**
  * 單一入口。後端先判斷意圖(規則 → LLM),再分派:
- *   regulation_qa / case_lookup → 固定管線, ad_review → 審稿, multi_hop → tool-calling agent。
+ *   意圖 regulation_qa / case_lookup → 固定路徑, ad_review → 審稿路徑, multi_hop → agent 路徑。
  * 不管走哪條,回傳格式都一樣:answer / route / sources / related_cases / verdict / trace / usage / meta。
- * forceIntent 可以跳過路由(審稿分頁用 "ad_review")。
+ * forceIntent 可以跳過分流直接指定意圖(前端不提供,保留給評估腳本與 API 呼叫端)。
  */
 export async function query(question, { forceIntent = null, topK = 8, maxToolCalls = 4, apiKey = "" } = {}) {
   const body = { question, top_k: topK, max_tool_calls: maxToolCalls };
